@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">VK Photo Viewer</string>
+
     <integer name="com_vk_sdk_AppId">5385249</integer>
+
 </resources>
