@@ -2,11 +2,15 @@ package com.nikolay.vkphotoviewer;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
@@ -29,20 +33,31 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
+import java.util.logging.LogRecord;
+
 
 public class MainActivity extends AppCompatActivity {
 
     WebView webView;
 TextView textView;
-
+    URL url;
     int length;
+    Handler h;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 VKSdk.login(this, VKScope.WALL, VKScope.PHOTOS);
-
+h = new Handler();
     }
 
 
@@ -53,12 +68,11 @@ VKSdk.login(this, VKScope.WALL, VKScope.PHOTOS);
             @Override
             public void onResult(VKAccessToken res) {
                 textView = (TextView)findViewById(R.id.textView1);
-
+                final ImageView imageView = (ImageView)findViewById(R.id.image1);
 
 
                     textView.setText(VKAccessToken.currentToken().accessToken);
 
-               // textView.setText(makeRequest());
 
                 final VKRequest request = new VKRequest("photos.get", VKParameters.from(VKApiConst.ALBUM_ID, "wall"));
 
@@ -67,17 +81,23 @@ request.executeWithListener(new VKRequest.VKRequestListener() {
     public void onComplete(VKResponse response) {
         super.onComplete(response);
         JSONArray jsonArray = null;
+
+
         try {
             jsonArray = response.json.getJSONObject("response").getJSONArray("items");
-            textView.setText(jsonArray.getJSONObject(1).getString("photo_807"));
 
 
+
+        url  = new URL(jsonArray.getJSONObject(1).getString("photo_75"));
 
         } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
 
+        imageView.setImageBitmap();
 
     }
 
@@ -102,32 +122,6 @@ request.executeWithListener(new VKRequest.VKRequestListener() {
         })) {
             super.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-    private String makeRequest() {
-
-        VKRequest request = new VKRequest("photos.get", VKParameters.from(VKApiConst.ALBUM_ID,"wall"));
-        request.executeWithListener(new VKRequest.VKRequestListener() {
-            @Override
-            public void onComplete(VKResponse response) {
-
-
-                JSONArray jsonArray = null;
-                try {
-                    jsonArray = response.json.getJSONObject("response").getJSONArray("items");
-                     length = jsonArray.length();
-
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-
-            }
-        });
-     return  Integer.toString(length);
     }
 
 
